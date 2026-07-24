@@ -1,3 +1,5 @@
+#![cfg(feature = "unifi")]
+
 use rustifi::models::{AccessType, Client, ClientType};
 use serde_json::json;
 

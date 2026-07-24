@@ -1,3 +1,5 @@
+#![cfg(feature = "unifi")]
+
 use rustifi::api::clients::GetClients;
 use rustifi::api::devices::GetDevices;
 use rustifi::api::Endpoint;

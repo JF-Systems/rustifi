@@ -17,6 +17,11 @@ exclude = [
     "sailr.json",
 ]
 
+[features]
+default = ["unifi"]
+unifi = []
+protect = ["dep:tokio-tungstenite", "dep:native-tls"]
+
 [dependencies]
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 reqwest = { version = "0.12", features = ["cookies", "json"] }
@@ -25,7 +30,14 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 url = "2.5"
+percent-encoding = "2.3"
 futures = "0.3"
+tokio-tungstenite = { version = "0.26", features = ["native-tls"], optional = true }
+native-tls = { version = "0.2", optional = true }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["test-util"] }
+wiremock = "0.6"
+
+[package.metadata.docs.rs]
+all-features = true

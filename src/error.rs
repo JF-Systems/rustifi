@@ -1,12 +1,16 @@
 use thiserror::Error;
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum Error {
     #[error("Authentication failed: {0}")]
     Auth(String),
 
     #[error("API request failed: {0}")]
     Request(#[from] reqwest::Error),
+
+    #[error("API request failed with status {status}: {body}")]
+    Api { status: u16, body: String },
 
     #[error("Response parsing failed: {0}")]
     Parse(String),
@@ -28,6 +32,9 @@ pub enum Error {
 
     #[error("URL parsing failed: {0}")]
     UrlParse(#[from] url::ParseError),
+
+    #[error("WebSocket error: {0}")]
+    WebSocket(String),
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;

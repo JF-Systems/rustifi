@@ -1,14 +1,25 @@
+#[cfg(feature = "unifi")]
 pub mod acl;
+#[cfg(feature = "unifi")]
 pub mod clients;
+#[cfg(feature = "unifi")]
 pub mod devices;
+#[cfg(feature = "unifi")]
 pub mod dns;
 pub mod endpoint;
+#[cfg(feature = "unifi")]
 pub mod firewall;
+#[cfg(feature = "unifi")]
 pub mod hotspot;
+#[cfg(feature = "unifi")]
 pub mod networks;
+#[cfg(feature = "unifi")]
 pub mod resources;
+#[cfg(feature = "unifi")]
 pub mod sites;
+#[cfg(feature = "unifi")]
 pub mod traffic;
+#[cfg(feature = "unifi")]
 pub mod wifi;
 
 pub use endpoint::Endpoint;

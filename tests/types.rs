@@ -1,3 +1,5 @@
+#![cfg(feature = "unifi")]
+
 use rustifi::models::{IpAddress, MacAddress};
 use serde_json::json;
 use std::net::Ipv4Addr;

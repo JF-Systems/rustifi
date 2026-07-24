@@ -1,3 +1,5 @@
+#![cfg(feature = "unifi")]
+
 use rustifi::models::{Device, DeviceType};
 use serde_json::json;
 

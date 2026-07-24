@@ -52,3 +52,6 @@ jobs:
       - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - run: cargo build --locked --verbose --all-targets
       - run: cargo test --locked --verbose
+      - run: cargo build --locked --verbose --no-default-features
+      - run: cargo test --locked --verbose --no-default-features --features protect
+      - run: cargo test --locked --verbose --all-features
