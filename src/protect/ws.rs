@@ -54,7 +54,9 @@ pub struct TypedWsStream<T> {
     // Set after a close frame or transport error; the stream then ends
     // instead of surfacing follow-up frames from the closing handshake.
     terminated: bool,
-    _marker: PhantomData<T>,
+    // fn() -> T keeps the stream Unpin/Send regardless of T, which is only
+    // ever produced by deserialization, never stored.
+    _marker: PhantomData<fn() -> T>,
 }
 
 impl<T> std::fmt::Debug for TypedWsStream<T> {
@@ -65,7 +67,7 @@ impl<T> std::fmt::Debug for TypedWsStream<T> {
 
 impl<T> Stream for TypedWsStream<T>
 where
-    T: for<'a> serde::Deserialize<'a> + Unpin,
+    T: for<'a> serde::Deserialize<'a>,
 {
     type Item = Result<WsMessage<T>>;
 
