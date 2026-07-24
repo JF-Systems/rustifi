@@ -1,0 +1,10 @@
+[package]
+name = "protect-events"
+version = "1.0.0"
+edition = "2021"
+description = "Example that lists Protect cameras, saves a snapshot, and tails live events"
+
+[dependencies]
+rustifi = { path = "../..", default-features = false, features = ["protect"] }
+tokio = { version = "1", features = ["full"] }
+futures = "0.3"

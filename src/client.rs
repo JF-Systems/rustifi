@@ -1,7 +1,7 @@
-use crate::api::endpoint::{Endpoint, HttpMethod};
+use crate::api::endpoint::Endpoint;
 use crate::error::Result;
-use reqwest::{cookie::Jar, Client};
-use std::sync::Arc;
+use crate::transport;
+use reqwest::Client;
 
 /// The base URL for the UniFi remote cloud API.
 pub const REMOTE_API_URL: &str = "https://api.ui.com";
@@ -107,23 +107,7 @@ impl UnifiClient {
         base_path: impl Into<String>,
         accept_invalid_certs: bool,
     ) -> Result<Self> {
-        let jar = Jar::default();
-        let cookie_store = Arc::new(jar);
-
-        let mut builder = Client::builder()
-            .user_agent("rustifi/1.0")
-            .cookie_store(true)
-            .cookie_provider(cookie_store)
-            .connect_timeout(std::time::Duration::from_secs(30))
-            .timeout(std::time::Duration::from_secs(60));
-
-        if accept_invalid_certs {
-            builder = builder
-                .danger_accept_invalid_certs(true)
-                .danger_accept_invalid_hostnames(true);
-        }
-
-        let http = builder.build()?;
+        let http = transport::build_http_client(accept_invalid_certs, true)?;
 
         Ok(Self {
             http,
@@ -252,21 +236,12 @@ impl UnifiClient {
     /// # Ok::<(), rustifi::Error>(())
     /// ```
     pub fn remote(api_key: impl Into<String>, host_id: impl Into<String>) -> Result<Self> {
-        let jar = Jar::default();
-        let cookie_store = Arc::new(jar);
-
         // Validate the API key can be parsed as a header value
         let key = api_key.into();
         let _: reqwest::header::HeaderValue = key.parse()?;
 
         // For remote API, we don't need to accept invalid certs
-        let http = Client::builder()
-            .user_agent("rustifi/1.0")
-            .cookie_store(true)
-            .cookie_provider(cookie_store)
-            .connect_timeout(std::time::Duration::from_secs(30))
-            .timeout(std::time::Duration::from_secs(60))
-            .build()?;
+        let http = transport::build_http_client(false, true)?;
 
         Ok(Self {
             http,
@@ -308,51 +283,20 @@ impl UnifiClient {
         E: Endpoint,
         E::Response: for<'a> serde::Deserialize<'a>,
     {
-        let path = endpoint.build_path();
-
-        // Build URL based on whether this is a remote or local client
-        let url = if let Some(host_id) = &self.host_id {
+        // Build URL prefix based on whether this is a remote or local client
+        let url_prefix = if let Some(host_id) = &self.host_id {
             // Remote API: https://api.ui.com/v1/connector/consoles/{host_id}/{path}
             format!(
-                "{}/{}/connector/consoles/{}/{}",
-                self.base_url, self.base_path, host_id, path
+                "{}/{}/connector/consoles/{}",
+                self.base_url, self.base_path, host_id
             )
         } else {
             // Local API: {base_url}/{base_path}/{path}
-            format!("{}/{}/{}", self.base_url, self.base_path, path)
+            format!("{}/{}", self.base_url, self.base_path)
         };
 
-        let mut headers = reqwest::header::HeaderMap::new();
-
-        if let Some(api_key) = &self.api_key {
-            headers.insert("X-API-Key", api_key.parse()?);
-        }
-
-        let mut request = self.http.request(E::METHOD.into(), &url).headers(headers);
-
-        // Append query parameters using reqwest's query() for proper URL encoding
-        let params = endpoint.query_params();
-        if !params.is_empty() {
-            request = request.query(&params);
-        }
-
-        // Add JSON body for POST/PUT/PATCH methods
-        if let Some(body) = endpoint.request_body()? {
-            request = request.json(&body);
-        }
-
-        let response = request.send().await?;
-
-        if !response.status().is_success() {
-            return Err(crate::error::Error::Request(
-                response.error_for_status().unwrap_err(),
-            ));
-        }
-
-        let body = response.text().await?;
-        let response_data = serde_json::from_str::<E::Response>(&body)
-            .map_err(|e| crate::error::Error::Parse(format!("{}\nResponse body: {}", e, body)))?;
-        Ok(response_data)
+        transport::execute_endpoint(&self.http, &url_prefix, self.api_key.as_deref(), endpoint)
+            .await
     }
 
     /// Execute a request for endpoints without dynamic path parameters.
@@ -371,17 +315,5 @@ impl UnifiClient {
 
     pub fn base_path(&self) -> &str {
         &self.base_path
-    }
-}
-
-impl From<HttpMethod> for reqwest::Method {
-    fn from(method: HttpMethod) -> Self {
-        match method {
-            HttpMethod::Get => reqwest::Method::GET,
-            HttpMethod::Post => reqwest::Method::POST,
-            HttpMethod::Put => reqwest::Method::PUT,
-            HttpMethod::Patch => reqwest::Method::PATCH,
-            HttpMethod::Delete => reqwest::Method::DELETE,
-        }
     }
 }

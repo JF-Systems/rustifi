@@ -1,6 +1,7 @@
 use thiserror::Error;
 
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum Error {
     #[error("Authentication failed: {0}")]
     Auth(String),
@@ -28,6 +29,9 @@ pub enum Error {
 
     #[error("URL parsing failed: {0}")]
     UrlParse(#[from] url::ParseError),
+
+    #[error("WebSocket error: {0}")]
+    WebSocket(String),
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;

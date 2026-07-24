@@ -1,3 +1,5 @@
+#![cfg(feature = "unifi")]
+
 use rustifi::response::{ApiResponse, PaginatedResponse};
 use serde::Deserialize;
 use serde_json::json;
