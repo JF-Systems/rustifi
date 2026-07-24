@@ -34,7 +34,7 @@ impl Endpoint for GetViewer {
     type Response = Viewer;
 
     fn build_path(&self) -> String {
-        format!("viewers/{}", self.viewer_id)
+        format!("viewers/{}", super::encode_id(&self.viewer_id))
     }
 }
 
@@ -61,7 +61,7 @@ impl Endpoint for PatchViewer {
     type Response = Viewer;
 
     fn build_path(&self) -> String {
-        format!("viewers/{}", self.viewer_id)
+        format!("viewers/{}", super::encode_id(&self.viewer_id))
     }
 
     fn request_body(&self) -> Result<Option<Value>, serde_json::Error> {

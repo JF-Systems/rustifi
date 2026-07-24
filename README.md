@@ -106,7 +106,14 @@ ends on disconnect and there is no replay cursor, so reconnect in a loop:
 use futures::StreamExt;
 
 loop {
-    let mut stream = client.subscribe_events().await?;
+    let mut stream = match client.subscribe_events().await {
+        Ok(stream) => stream,
+        Err(e) => {
+            eprintln!("subscription failed: {e}");
+            tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+            continue;
+        }
+    };
     while let Some(msg) = stream.next().await {
         match msg {
             Ok(event) => println!("{:?} {:?}", event.action, event.item.event_type),

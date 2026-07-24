@@ -128,7 +128,9 @@ impl ProtectClient {
     pub async fn snapshot(&self, camera_id: &str, high_quality: bool) -> Result<Vec<u8>> {
         let url = format!(
             "{}/{}/cameras/{}/snapshot",
-            self.base_url, PROTECT_BASE_PATH, camera_id
+            self.base_url,
+            PROTECT_BASE_PATH,
+            crate::protect::api::encode_id(camera_id)
         );
 
         let response = self
@@ -143,7 +145,9 @@ impl ProtectClient {
             .await?;
 
         if !response.status().is_success() {
-            return Err(Error::Request(response.error_for_status().unwrap_err()));
+            let status = response.status().as_u16();
+            let body = response.text().await.unwrap_or_default();
+            return Err(Error::Api { status, body });
         }
 
         Ok(response.bytes().await?.to_vec())

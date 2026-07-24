@@ -1066,6 +1066,7 @@ dependencies = [
  "chrono",
  "futures",
  "native-tls",
+ "percent-encoding",
  "reqwest",
  "serde",
  "serde_json",

@@ -68,9 +68,11 @@ where
     let response = request.send().await?;
 
     if !response.status().is_success() {
-        return Err(crate::error::Error::Request(
-            response.error_for_status().unwrap_err(),
-        ));
+        // Preserve the error body — controllers return JSON describing the
+        // actual failure reason, which error_for_status() would discard.
+        let status = response.status().as_u16();
+        let body = response.text().await.unwrap_or_default();
+        return Err(crate::error::Error::Api { status, body });
     }
 
     let body = response.text().await?;

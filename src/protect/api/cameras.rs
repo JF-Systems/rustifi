@@ -34,7 +34,7 @@ impl Endpoint for GetCamera {
     type Response = Camera;
 
     fn build_path(&self) -> String {
-        format!("cameras/{}", self.camera_id)
+        format!("cameras/{}", super::encode_id(&self.camera_id))
     }
 }
 
@@ -61,7 +61,7 @@ impl Endpoint for PatchCamera {
     type Response = Camera;
 
     fn build_path(&self) -> String {
-        format!("cameras/{}", self.camera_id)
+        format!("cameras/{}", super::encode_id(&self.camera_id))
     }
 
     fn request_body(&self) -> Result<Option<Value>, serde_json::Error> {
@@ -90,7 +90,7 @@ impl Endpoint for GetRtspsStreams {
     type Response = RtspsStreams;
 
     fn build_path(&self) -> String {
-        format!("cameras/{}/rtsps-stream", self.camera_id)
+        format!("cameras/{}/rtsps-stream", super::encode_id(&self.camera_id))
     }
 }
 
@@ -117,7 +117,7 @@ impl Endpoint for CreateRtspsStream {
     type Response = RtspsStreams;
 
     fn build_path(&self) -> String {
-        format!("cameras/{}/rtsps-stream", self.camera_id)
+        format!("cameras/{}/rtsps-stream", super::encode_id(&self.camera_id))
     }
 
     fn request_body(&self) -> Result<Option<Value>, serde_json::Error> {
@@ -149,7 +149,7 @@ impl Endpoint for DeleteRtspsStream {
     type Response = Option<serde_json::Value>;
 
     fn build_path(&self) -> String {
-        format!("cameras/{}/rtsps-stream", self.camera_id)
+        format!("cameras/{}/rtsps-stream", super::encode_id(&self.camera_id))
     }
 
     fn query_params(&self) -> Vec<(&'static str, String)> {

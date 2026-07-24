@@ -34,7 +34,7 @@ impl Endpoint for GetLight {
     type Response = Light;
 
     fn build_path(&self) -> String {
-        format!("lights/{}", self.light_id)
+        format!("lights/{}", super::encode_id(&self.light_id))
     }
 }
 
@@ -61,7 +61,7 @@ impl Endpoint for PatchLight {
     type Response = Light;
 
     fn build_path(&self) -> String {
-        format!("lights/{}", self.light_id)
+        format!("lights/{}", super::encode_id(&self.light_id))
     }
 
     fn request_body(&self) -> Result<Option<Value>, serde_json::Error> {

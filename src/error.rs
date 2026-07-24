@@ -9,6 +9,9 @@ pub enum Error {
     #[error("API request failed: {0}")]
     Request(#[from] reqwest::Error),
 
+    #[error("API request failed with status {status}: {body}")]
+    Api { status: u16, body: String },
+
     #[error("Response parsing failed: {0}")]
     Parse(String),
 

@@ -34,7 +34,7 @@ impl Endpoint for GetSensor {
     type Response = Sensor;
 
     fn build_path(&self) -> String {
-        format!("sensors/{}", self.sensor_id)
+        format!("sensors/{}", super::encode_id(&self.sensor_id))
     }
 }
 
@@ -61,7 +61,7 @@ impl Endpoint for PatchSensor {
     type Response = Sensor;
 
     fn build_path(&self) -> String {
-        format!("sensors/{}", self.sensor_id)
+        format!("sensors/{}", super::encode_id(&self.sensor_id))
     }
 
     fn request_body(&self) -> Result<Option<Value>, serde_json::Error> {

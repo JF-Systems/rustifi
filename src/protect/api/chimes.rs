@@ -34,7 +34,7 @@ impl Endpoint for GetChime {
     type Response = Chime;
 
     fn build_path(&self) -> String {
-        format!("chimes/{}", self.chime_id)
+        format!("chimes/{}", super::encode_id(&self.chime_id))
     }
 }
 
@@ -61,7 +61,7 @@ impl Endpoint for PatchChime {
     type Response = Chime;
 
     fn build_path(&self) -> String {
-        format!("chimes/{}", self.chime_id)
+        format!("chimes/{}", super::encode_id(&self.chime_id))
     }
 
     fn request_body(&self) -> Result<Option<Value>, serde_json::Error> {

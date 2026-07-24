@@ -136,17 +136,44 @@ async fn test_delete_rtsps_stream_query_params_and_empty_body() {
 }
 
 #[tokio::test]
-async fn test_error_status_maps_to_request_error() {
+async fn test_error_status_preserves_body() {
     let server = MockServer::start().await;
 
     Mock::given(method("GET"))
         .and(path("/proxy/protect/integration/v1/cameras/nope"))
-        .respond_with(ResponseTemplate::new(404))
+        .respond_with(
+            ResponseTemplate::new(404).set_body_json(json!({ "error": "camera not found" })),
+        )
         .mount(&server)
         .await;
 
     let err = client_for(&server).await.camera("nope").await.unwrap_err();
-    assert!(matches!(err, rustifi::Error::Request(_)));
+    match err {
+        rustifi::Error::Api { status, body } => {
+            assert_eq!(status, 404);
+            assert!(body.contains("camera not found"));
+        }
+        other => panic!("expected Api error, got {other:?}"),
+    }
+}
+
+#[tokio::test]
+async fn test_resource_ids_are_path_encoded() {
+    let server = MockServer::start().await;
+
+    // An ID containing a slash must be encoded into a single path segment,
+    // not allowed to change the route.
+    Mock::given(method("GET"))
+        .and(path("/proxy/protect/integration/v1/cameras/a%2Fb"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "id": "a/b", "modelKey": "camera", "state": "CONNECTED", "name": "Weird"
+        })))
+        .expect(1)
+        .mount(&server)
+        .await;
+
+    let camera = client_for(&server).await.camera("a/b").await.unwrap();
+    assert_eq!(camera.name, "Weird");
 }
 
 #[tokio::test]
